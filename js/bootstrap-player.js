@@ -38,13 +38,13 @@
 				if (toggle === 'play') {
 					$(play).html('<i class="icon-play"></i>');
 					$(play).click(function () {
-						//song.play();
+						song.play();
 					});
 				}
 				if (toggle === 'pause') {
 					$(play).html('<i class="icon-pause"></i>');
 					$(play).click(function () {
-						//song.pause();
+						song.pause();
 					});
 				}
 			};
