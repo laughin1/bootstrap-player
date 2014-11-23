@@ -13,7 +13,14 @@
 						"Uppermost - Energy.wav"
 					];
 		 
-		$('#searchMusic').typeahead({source: colors});
+		$('#searchMusic').typeahead({
+			source: colors,
+			hint: true,
+			highlight: true,
+			minLength: 0
+		});
+
+		$("#searchMusic").on('focus', $("#searchMusic").typeahead.bind($("#searchMusic"), 'lookup'));
 
 		/*var ros = new ROSLIB.Ros({
 	       url : 'ws://localhost:9090'
@@ -79,13 +86,20 @@
 
 	    var songTotalLength = 500;
 	    var songCurrentTime = 0;
+	    var songVolume = 0.0;
+	    var setPlayFunc;
 	    var setSeekFunc;
     	var showTimeFunc;
+		var setVolumeFunc;
+		var setMuteFunc;
+		var setArtistFunc;
+		var setTitleFunc;
 
 		var song = this;
 			song.controls=false;
 		var player_box = document.createElement('div');
 			$(player_box).addClass($(song).attr('class') + ' well container-fluid playa');
+			$(player_box).attr('id', "player_control");
 		var data_sec = document.createElement('section');
 			$(data_sec).addClass('collapse');
 		var toggle_holder = document.createElement('div');
@@ -100,6 +114,7 @@
 			$(toggle_holder).append(data_toggle);
 		var data_table = document.createElement('table');
 			$(data_table).addClass('table table-condensed');
+			$(data_table).attr('id', 'data_table');
 		var player = document.createElement('section');
 			$(player).addClass('btn-group row-fluid');
 		var load_error = function(){
@@ -130,6 +145,17 @@
 				}
 			});
 
+			setPlayFunc = function(setPlay) {
+				if (setPlay) {
+					$(play).removeClass('play')
+					$(play).html('<i class="icon-pause"></i>');
+				} else {
+					$(play).addClass('play')
+					$(play).html('<i class="icon-play"></i>');
+
+					//pause();
+				}
+			}
 			$(player).append(play);
 		};
 		var addSeek = function() {
@@ -175,10 +201,18 @@
 				//$(seek).css('background','linear-gradient(to right,  ' + bg + ')');
 				$(seek).css('background-color', '#ddd');
 			};
-			setSeekFunc = seek.set = function () {
+			seek.set = function () {
 				$(seek).val(songCurrentTime);
 				seek.progress();
 			};
+
+			setSeekFunc = function (val) {
+				console.log(parseInt(val))
+				songCurrentTime = parseInt(val);
+				$(seek).val(songCurrentTime);
+				seek.progress();
+			};
+
 			seek.slide = function () {
 				songCurrentTime = parseInt($(seek).val());
 
@@ -195,7 +229,7 @@
 			};
 			seek.reset = function () {
 				$(seek).val(0);
-				songCurrentTime = $(seek).val();
+				songCurrentTime = parseInt($(seek).val());
 				//seekTo(songCurrentTime);
 				if(!song.loop)
 				{
@@ -208,17 +242,9 @@
 				$(seek_wrapper).addClass('btn disabled span4');
 
 			$(seek_wrapper).append(seek);
-			$(seek).on('change', seek.slide);
-			$(song).on('timeupdate', seek.init);
-			$(song).on('loadedmetadata', seek.init);
-			$(song).on('loadeddata', seek.init);
-			$(song).on('progress', seek.init);
-			$(song).on('canplay', seek.init);
-			$(song).on('canplaythrough', seek.init);
-			$(song).on('ended', seek.reset);
-			if(song.readyState > 0){
-				seek.init();
-			}
+
+			seek.init();
+
 			$(player).append(seek_wrapper);
 		};
 		var addTime = function() {
@@ -260,15 +286,17 @@
 				$(time).tooltip('show');
 			});
 
+			time.showtime()
+
 			$(player).append(time);
 		};
 		var addMute = function() {
 			var mute = document.createElement('button');
 				$(mute).addClass('btn span1');
 			mute.checkVolume = function () {
-				if (song.volume > 0.5 && !song.muted) {
+				if (songVolume > 0.5 && !song.muted) {
 					$(mute).html('<i class="icon-volume-up"></i>');
-				} else if (song.volume < 0.5 && song.volume > 0 && !song.muted) {
+				} else if (songVolume < 0.5 && songVolume > 0 && !song.muted) {
 					$(mute).html('<i class="icon-volume-down"></i>');
 				} else {
 					$(mute).html('<i class="icon-volume-off"></i>');
@@ -277,14 +305,25 @@
 			$(mute).click(function () {
 				if (song.muted) {
 					song.muted = false;
-					song.volume = song.oldvolume;
+					songVolume = song.oldvolume;
 				} else {
 					song.muted = true;
-					song.oldvolume = song.volume;
-					song.volume = 0;
+					song.oldvolume = songVolume;
+					songVolume = 0;
 				}
 				mute.checkVolume();
 			});
+
+			setMuteFunc = function() {
+				console.log(parseFloat(songVolume));
+				if (songVolume > 0.5) {
+					$(mute).html('<i class="icon-volume-up"></i>');
+				} else if (songVolume < 0.5 && songVolume > 0) {
+					$(mute).html('<i class="icon-volume-down"></i>');
+				} else {
+					$(mute).html('<i class="icon-volume-off"></i>');
+				}
+			};
 			mute.checkVolume();
 			$(song).on('volumechange', mute.checkVolume);
 			$(player).append(mute);
@@ -300,10 +339,16 @@
 				});
 			volume.slide = function () {
 				song.muted = false;
-				song.volume = $(volume).val();
+				songVolume = parseFloat($(volume).val());
 			};
+
+			setVolumeFunc = function(val) {
+				song.muted = false;
+				$(volume).val(val);
+				songVolume = val;
+			}
 			volume.set = function () {
-				$(volume).val(song.volume);
+				$(volume).val(songVolume);
 			};
 			var vol_wrapper = document.createElement('div');
 				$(vol_wrapper).addClass('btn disabled span3');
@@ -327,14 +372,15 @@
 			$(row).append(head);
 			$(row).append(data);
 			$(data_table).append(row);
+
+			return function(val) {
+				$(data).html(val);
+			};
 		};
 		var addData = function() {
-			if (typeof($(song).data('infoAlbumArt')) !== 'undefined'){ addAlbumArt();}
-			if (typeof($(song).data('infoArtist')) !== 'undefined'){ addInfo('Artist', 'infoArtist');}
-			if (typeof($(song).data('infoTitle')) !== 'undefined'){ addInfo('Title', 'infoTitle');}
-			if (typeof($(song).data('infoAlbumTitle')) !== 'undefined'){ addInfo('Album', 'infoAlbumTitle');}
-			if (typeof($(song).data('infoLabel')) !== 'undefined'){ addInfo('Label', 'infoLabel');}
-			if (typeof($(song).data('infoYear')) !== 'undefined'){ addInfo('Year', 'infoYear');}
+			setArtistFunc = addInfo('Artist', 'infoArtist');
+			setTitleFunc = addInfo('Title', 'infoTitle');
+
 			if ($(data_table).html() !== ""){
 				$(data_sec).append(data_table);
 				$(player_box).append(toggle_holder);
@@ -342,12 +388,11 @@
 			}
 		};
 		var addPlayer = function() {
-			if ($(song).data('play') !== 'off'){ addPlay();}
-			if ($(song).data('seek') !== 'off'){ addSeek();}
-			if ($(song).data('time') !== 'off'){ addTime();}
-			if ($(song).data('mute') !== 'off'){ addMute();}
-			if ($(song).data('volume') !== 'off'){ addVolume();}
-			
+			addPlay();
+			addSeek();
+			addTime();
+			addMute();
+			addVolume();
 
 			$(player_box).append(player);
 		};
@@ -376,13 +421,33 @@
 			load_error();
 		});
 
+
+		$(".load").click(function() {
+		    var splitSongName = $("#searchMusic").val().split('-');
+		    if(splitSongName.length == 2)
+		    {
+			    var artist = splitSongName[0];
+			    var splitSong = splitSongName[1].split('.');
+			    var title = splitSong[0];
+
+			    setArtistFunc(artist);
+			    setTitleFunc(title);
+	    	}
+		});
+
+
+		function chooseandLoadRandomSong() {
+			$("#searchMusic").val(colors[Math.floor(Math.random()*(colors.length))]);
+			$(".load")[0].click();
+		};
+
 		setInterval( 
 			function() {
-			 songCurrentTime += 1;
-			 var seek = $("#specialVal");
-				 $(seek).val(songCurrentTime);
-			 setSeekFunc();
-			 showTimeFunc();
+				setPlayFunc(Math.random() >= 0.5);
+				setSeekFunc(Math.floor(Math.random()*(songTotalLength+1)));
+				showTimeFunc();
+				setVolumeFunc(Math.random());				
+				setMuteFunc(); // Mute after setting the volume
 			}, 1000);
 
 

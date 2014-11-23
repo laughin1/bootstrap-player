@@ -11,21 +11,22 @@
 		<section class="container">
 			<h4> Music Control </h4>
 			<div class="span5">
-				<input id="searchMusic" type="text" data-provide="typeahead" title="Choose song to load.">
-				<button class="btn btn-default">Load Song</button>
-			</div>
-			<div class="span5">
-				<audio controls
-					data-info-album-title="8874"
-					data-info-artist="Billy Murray"
-					data-info-title="Come, take a trip in my air-ship"
-					data-info-label="Edison Gold Moulded Record"
-					data-info-year="1905"
-					data-info-att-link="http://cylinders.library.ucsb.edu/search.php?query=8874">
-					<source src="http://www.lost-letters.com/wp-content/uploads/2013/02/cusb-cyl2985d.ogg" type="audio/ogg" />
-					<source src="http://www.lost-letters.com/wp-content/uploads/2013/02/cusb-cyl2985d.mp3" type="audio/mpeg" />
-					<a href="http://www.lost-letters.com/wp-content/uploads/2013/02/cusb-cyl2985d.mp3">cusb_cyl2985d</a>
-				</audio>
+
+				<div class="span5">
+					<div class="undefined well container-fluid playa">
+						<input id="searchMusic" class="span3" type="text" placeholder="Select Song" title="Choose song to load.">
+						<button class="btn btn-default load">Load Song</button>
+					</div>
+				</div>
+				<div id="player_control_container" class="span5">
+					<audio controls
+						data-info-title="Come, take a trip in my air-ship"
+						data-info-artist="b"
+						<source src="http://www.lost-letters.com/wp-content/uploads/2013/02/cusb-cyl2985d.ogg" type="audio/ogg" />
+						<source src="http://www.lost-letters.com/wp-content/uploads/2013/02/cusb-cyl2985d.mp3" type="audio/mpeg" />
+						<a href="http://www.lost-letters.com/wp-content/uploads/2013/02/cusb-cyl2985d.mp3">cusb_cyl2985d</a>
+					</audio>
+				</div>
 			</div>
 		</section>
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>

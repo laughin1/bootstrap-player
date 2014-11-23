@@ -67,3 +67,26 @@
 		overflow:hidden;
 	}
 }
+
+.load {
+	margin-top:-8px;
+}
+
+#player_control {
+	padding-top:0px;
+
+	border-top-style:none;
+	box-shadow:0 0px 1px rgba(0, 0, 0, 0.05) inset
+}
+
+body #player_control_container {
+	margin-top:-35px;
+}
+
+#searchMusic {
+	width:319px;
+}
+
+#data_table {
+	margin-bottom: 0px;
+}
